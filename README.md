@@ -41,7 +41,7 @@ With this model we can:
 
 # Additional Reading
 
-* [Initial hacker new comment that described a system like this](https://news.ycombinator.com/item?id=12374471)
+* [Initial hacker news comment that described a system like this](https://news.ycombinator.com/item?id=12374471)
 * Microsoft whitepaper that described a system like this - [Automated Analysis and Debugging of Network Connectivity Policies](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/secguru.pdf)
 * [Z3 - a tutorial](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.225.8231&rep=rep1&type=pdf)
 * [Z3 API in Python](http://www.cs.tau.ac.il/~msagiv/courses/asv/z3py/guide-examples.htm)
