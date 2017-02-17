@@ -2,33 +2,46 @@
 
 import z3
 import ipaddress
+import socket
+
+def rule_to_model(source_cidr, source_port, dest_cidr, dest_port, protocol):
+    source_cidr_model, source_cidr_constraints = v4cidr_to_model_and_constraints(source_cidr, 'source_cidr')
+    source_port_model, source_port_constraints = port_to_model_and_constraints(port, 'source_port')
+    dest_cidr_model, dest_cidr_constraints = v4cidr_to_model_and_constraints(dest_cidr, 'dest_cidr')
+    dest_port_model, dest_port_constraints = port_to_model_and_constraints(port, 'dest_port')
+    protocol_model, protocol_constraints = protocol_to_model_and_constraints(protocol)
+
+def protocol_to_model_and_constraints(protocol):
+    model = z3.BitVec('protocol', 8)
+    proto_number = socket.getprotobyname(protocol)
+    return model, [model == proto_number]
+
+def port_to_model_and_constraints(port, name):
+    model = z3.BitVec(name, 16)
+    return model, [model == port]
+
+def v4cidr_to_model_and_constraints(raw_unicode_string, name):
+    cidr = ipaddress.ip_network(raw_unicode_string)
+    first_address = int(cidr[0])
+    last_address  = int(cidr[-1])
+
+    model = z3.BitVec(name, 32)
+    return model, [model >= first_address, model <= last_address]
 
 def main():
     s = z3.Solver()
 
-    source_cidr       = ipaddress.ip_network(u'192.168.0.0/16')
+    firewall = z3.Function('firewall', z3.BoolSort())
 
-    # TODO: would a constrained bit-vector be a better representation?
-    #source_ip         = source_cidr.network_address
-    #source_prefix_len = source_cidr.prefixlen
-    #source_ip_bin     = bin(int(source_ip))
-    #source_model = z3.BitVec('source_model', 32)
-
-    first_source = int(source_cidr[0])
-    last_source  = int(source_cidr[-1])
-
-    source_ip_model = z3.BitVec('source_ip_model', 32)
-    s.add(source_ip_model >= first_source, source_ip_model <= last_source)
+    s.add(source_ip_constraints)
 
     source_port_model = z3.BitVec('source_port_model', 16)
+
+    s.add(source_port_model)
+
+    dest_ip_model, dest_ip_constraints = v4cidr_to_model_and_constraints(u'192.168.1.100/32', 'dest_cidr')
     
-    dest_cidr = ipaddress.ip_network(u'192.168.1.100/32')
-
-    first_dest = int(dest_cidr[0])
-    last_dest  = int(dest_cidr[-1])
-
-    dest_ip_model = z3.BitVec('dest_ip_model', 32)
-    s.add(dest_ip_model <= first_dest, dest_ip_model >= last_dest)
+    s.add(dest_ip_constraints)
 
     dest_port_model = z3.BitVec('dest_port_model', 16)
     s.add(dest_port_model != 22)
